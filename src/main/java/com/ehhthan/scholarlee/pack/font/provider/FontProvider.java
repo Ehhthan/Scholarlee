@@ -1,4 +1,4 @@
-package com.ehhthan.scholarlee.pack.font;
+package com.ehhthan.scholarlee.pack.font.provider;
 
 import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.font.character.SizedCharacter;
@@ -19,12 +19,13 @@ public interface FontProvider {
         return switch (Type.valueOf(json.get("type").getAsString().toUpperCase(Locale.ROOT))) {
             case SPACE ->  new SpaceFontProvider(json);
             case BITMAP -> new BitmapFontProvider(pack, json);
+            case REFERENCE -> new ReferenceFontProvider(pack, json);
             default -> null;
         };
 
     }
 
-    public enum Type {
+    enum Type {
         BITMAP,
         SPACE,
         UNIHEX,

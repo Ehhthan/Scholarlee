@@ -1,5 +1,6 @@
 package com.ehhthan.scholarlee.pack;
 
+import com.ehhthan.scholarlee.api.NamespacedKey;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -44,13 +45,18 @@ public class FileResourcePack implements ResourcePack {
             }
     }
 
+    @Override
     public Set<String> getNamespaces() {
         return namespaces;
     }
 
     @Override
-    public BufferedImage getImageFile(File file) {
+    public File getAssetsDirectory() {
+        return assetsDirectory;
+    }
 
+    @Override
+    public BufferedImage getImageFile(File file) {
         BufferedImage image;
         try {
             image = ImageIO.read(file);
@@ -73,11 +79,12 @@ public class FileResourcePack implements ResourcePack {
     }
 
     @Override
-    public File getFile(String namespace, String type, String path) {
-        if (!namespaces.contains(namespace)) {
-            throw new IllegalArgumentException(String.format("Namespace '%s' does not exist.", namespace));
+    public File getFile(NamespacedKey key, AssetType type) {
+        if (!namespaces.contains(key.getNamespace())) {
+            throw new IllegalArgumentException(String.format("Namespace '%s' does not exist.", key.getNamespace()));
         }
 
-        return new File(assetsDirectory, String.format("%s/%s/%s", namespace, type, path));
+        return new File(assetsDirectory, String.format("%s/%s/%s", key.getNamespace(), type.getPath(),
+                type.appendExtension(key.getKey())));
     }
 }

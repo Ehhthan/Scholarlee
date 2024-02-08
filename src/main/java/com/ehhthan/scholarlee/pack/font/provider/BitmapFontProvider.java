@@ -1,5 +1,6 @@
-package com.ehhthan.scholarlee.pack.font;
+package com.ehhthan.scholarlee.pack.font.provider;
 
+import com.ehhthan.scholarlee.api.NamespacedKey;
 import com.ehhthan.scholarlee.api.image.TrimmedImage;
 import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.font.character.AscentedCharacter;
@@ -30,7 +31,7 @@ public class BitmapFontProvider implements FontProvider {
         for (int i = 0; i < chars.size(); i++)
             codepoints[i] = chars.get(i).getAsString().codePoints().toArray();
 
-        BufferedImage base = pack.getImageFile(file);
+        BufferedImage base = pack.getTextureFile(NamespacedKey.fromString(file));
         int rows = codepoints.length, columns = codepoints[0].length;
         TrimmedImage[][] tiles = PackTexture.tiles(base, rows, columns);
         int tileHeight = base.getHeight() / rows;

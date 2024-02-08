@@ -1,39 +1,30 @@
 package com.ehhthan.scholarlee.pack;
 
+import com.ehhthan.scholarlee.api.NamespacedKey;
 import com.google.gson.JsonObject;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Set;
 
 public interface ResourcePack {
     static String DEFAULT_NAMESPACE = "minecraft";
+
+    Set<String> getNamespaces();
+
+    File getAssetsDirectory();
 
     BufferedImage getImageFile(File file);
 
     JsonObject getJsonFile(File file);
 
-    File getFile(String namespace, String type, String path);
+    File getFile(NamespacedKey namespacedKey, AssetType type);
 
-    default BufferedImage getImageFile(String path) {
-        return getImageFile(getFileFromPath(path, "textures"));
+    default BufferedImage getTextureFile(NamespacedKey namespacedKey) {
+        return getImageFile(getFile(namespacedKey, AssetType.TEXTURE));
     };
 
-    default File getFileFromPath(String path, String type) {
-        String[] split = path.split(":");
-        if (split.length == 1) {
-            return getFile(DEFAULT_NAMESPACE, type, split[0]);
-        } else if (split.length == 2) {
-            return getFile(split[0], type, split[1]);
-        } else {
-            throw new IllegalArgumentException(String.format("Path is incorrectly formatted: %s", path));
-        }
-    }
-
-    default BufferedImage getImageFile(String namespace, String type, String path) {
-        return getImageFile(getFile(namespace, type, path));
-    }
-
-    default JsonObject getJsonFile(String namespace, String type, String path) {
-        return getJsonFile(getFile(namespace, type, path));
-    }
+    default JsonObject getFontFile(NamespacedKey namespacedKey) {
+        return getJsonFile(getFile(namespacedKey, AssetType.FONT));
+    };
 }

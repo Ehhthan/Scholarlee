@@ -1,7 +1,6 @@
-package com.ehhthan.scholarlee.pack.font;
+package com.ehhthan.scholarlee.pack.font.provider;
 
 import com.ehhthan.scholarlee.pack.font.character.SizedCharacter;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
