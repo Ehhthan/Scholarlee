@@ -15,8 +15,10 @@ public class ReferenceFontProvider implements FontProvider {
 
     public ReferenceFontProvider(ResourcePack pack, JsonObject json) {
         this.id = json.get("id").getAsString();
-        for (JsonElement provider : pack.getFontFile(NamespacedKey.fromString(id)).get("providers").getAsJsonArray()) {
-            characters.putAll(FontProvider.get(pack, provider.getAsJsonObject()).getCharacters());
+        for (JsonElement jsonProvider : pack.getFontFile(NamespacedKey.fromString(id)).get("providers").getAsJsonArray()) {
+            FontProvider fontProvider = FontProvider.get(pack, jsonProvider.getAsJsonObject());
+            if (fontProvider != null && fontProvider.getCharacters() != null)
+                characters.putAll(fontProvider.getCharacters());
         }
     }
 

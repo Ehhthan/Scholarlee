@@ -6,6 +6,7 @@ import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.assets.font.character.SizedCharacter;
 import com.ehhthan.scholarlee.pack.assets.font.provider.FontProvider;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,15 +21,18 @@ public class PackFont {
 
     public PackFont(ResourcePack pack, NamespacedKey namespacedKey) {
         this.namespacedKey = namespacedKey;
-        for (JsonElement jsonProvider : pack.getFontFile(namespacedKey).get("providers").getAsJsonArray()) {
-            try {
-                FontProvider fontProvider = FontProvider.get(pack, jsonProvider.getAsJsonObject());
-                if (fontProvider != null) {
-                    providers.add(fontProvider);
-                    characters.putAll(fontProvider.getCharacters());
+        JsonObject file = pack.getFontFile(namespacedKey);
+        if (file.has("providers")) {
+            for (JsonElement jsonProvider : file.get("providers").getAsJsonArray()) {
+                try {
+                    FontProvider fontProvider = FontProvider.get(pack, jsonProvider.getAsJsonObject());
+                    if (fontProvider != null) {
+                        providers.add(fontProvider);
+                        characters.putAll(fontProvider.getCharacters());
+                    }
+                } catch (IllegalArgumentException e) {
+                    ScholarleeAPI.get().getLogger().log(System.Logger.Level.ERROR, String.format("Could not load a font provider for font '%s': %s", namespacedKey, e.getMessage()));
                 }
-            } catch (IllegalArgumentException e) {
-                ScholarleeAPI.get().getLogger().log(System.Logger.Level.ERROR, String.format("Could not load a font provider for font '%s': %s", namespacedKey, e.getMessage()));
             }
         }
     }

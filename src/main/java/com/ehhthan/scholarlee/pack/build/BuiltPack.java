@@ -25,6 +25,24 @@ public class BuiltPack {
     private Map<NamespacedKey, PackFont> buildFonts(ResourcePack pack) {
         Map<NamespacedKey, PackFont> fonts = new HashMap<>();
 
+        // default fonts
+        if (pack.isUsingDefaultAssets()) {
+            File fontDirectory = new File(pack.getDefaultAssetsDirectory(), String.format("%s/font", NamespacedKey.MINECRAFT));
+            if (fontDirectory.exists()) {
+                try {
+                    Files.walk(fontDirectory.toPath()).forEach(path -> {
+                        File file = path.toFile();
+                        if (file.isFile() && path.toString().endsWith(InternalLocation.FONT.getExtension())) {
+                            NamespacedKey namespacedKey = pack.getNamespacedKey(file);
+                            fonts.put(namespacedKey, new PackFont(pack, namespacedKey));
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         for (String namespace : pack.getNamespaces()) {
             File fontDirectory = new File(pack.getAssetsDirectory(), String.format("%s/font", namespace));
             if (fontDirectory.exists()) {

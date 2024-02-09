@@ -22,8 +22,8 @@ public class BitmapFontProvider implements FontProvider {
 
     public BitmapFontProvider(ResourcePack pack, JsonObject json) {
         this.file = json.get("file").getAsString();
-        this.ascent = json.get("ascent").getAsInt();
-        this.height = json.get("height").getAsInt();
+        this.ascent = (json.has("ascent")) ? json.get("ascent").getAsInt() : 7;
+        this.height = (json.has("height")) ? json.get("height").getAsInt() : 8;
 
         JsonArray chars = json.getAsJsonArray("chars");
 

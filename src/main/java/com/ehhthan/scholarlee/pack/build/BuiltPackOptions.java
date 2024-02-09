@@ -10,12 +10,8 @@ public class BuiltPackOptions {
     private final boolean useDefaultAssets;
 
     private BuiltPackOptions(Builder builder) {
-        this.pack = builder.pack;
         this.useDefaultAssets = builder.useDefaultAssets;
-    }
-
-    public static Builder builder(ResourcePack pack) {
-        return new Builder(pack);
+        this.pack = new FileResourcePack(builder.packFile, (useDefaultAssets) ? builder.assetVersion : null);
     }
 
     public static Builder file(File file) {
@@ -31,27 +27,32 @@ public class BuiltPackOptions {
     }
 
     public static class Builder {
-        private final ResourcePack pack;
+        private final File packFile;
         private boolean useDefaultAssets = true;
-
-        Builder(ResourcePack pack) {
-            this.pack = pack;
-        }
+        private String assetVersion = "1_20_4";
 
         Builder(File file) {
-            this.pack = new FileResourcePack(file);
+            this.packFile = file;
         }
 
-        public ResourcePack getPack() {
-            return pack;
+        public File packFile() {
+            return packFile;
         }
 
-        public boolean isUsingDefaultAssets() {
+        public boolean useDefaultAssets() {
             return useDefaultAssets;
         }
 
         public void useDefaultAssets(boolean useDefaultAssets) {
             this.useDefaultAssets = useDefaultAssets;
+        }
+
+        public String assetVersion() {
+            return assetVersion;
+        }
+
+        public void assetVersion(String assetVersion) {
+            this.assetVersion = assetVersion;
         }
 
         public BuiltPackOptions build() {

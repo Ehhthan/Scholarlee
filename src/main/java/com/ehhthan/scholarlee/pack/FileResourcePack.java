@@ -14,20 +14,27 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class FileResourcePack implements ResourcePack {
     private final Gson gson;
     private final File packDirectory;
     private final File assetsDirectory;
+    private final File defaultAssetsDirectory;
 
     private final Set<String> namespaces = new HashSet<>();
 
     public FileResourcePack(File pack) {
+        this(pack, null);
+    }
+
+    public FileResourcePack(File pack, String version) {
         this.gson = new Gson();
         this.packDirectory = pack;
         if (!packDirectory.exists() || !packDirectory.isDirectory()) {
@@ -38,6 +45,19 @@ public class FileResourcePack implements ResourcePack {
         if (!assetsDirectory.exists() || !assetsDirectory.isDirectory()) {
             throw new IllegalArgumentException("No assets directory exists.");
         }
+
+        if (version != null) {
+            this.defaultAssetsDirectory = new File("C:\\Users\\Ethan\\Desktop\\Plugins\\Scholarlee\\src\\main\\resources\\mc\\1_20_4\\assets");
+//            URL resource = this.getClass().getResource(String.format("mc/%s/assets", version));
+//
+//            if (resource == null)
+//                throw new IllegalArgumentException(String.format("Cannot load default assets with version '%s'.", version));
+//
+//            this.defaultAssetsDirectory = new File(resource.getPath());
+        } else {
+            this.defaultAssetsDirectory = null;
+        }
+
 
         File[] namespaceFiles = assetsDirectory.listFiles();
         if (namespaceFiles != null)
@@ -59,6 +79,11 @@ public class FileResourcePack implements ResourcePack {
     @Override
     public File getAssetsDirectory() {
         return assetsDirectory;
+    }
+
+    @Override
+    public File getDefaultAssetsDirectory() {
+        return defaultAssetsDirectory;
     }
 
     @Override
@@ -90,13 +115,29 @@ public class FileResourcePack implements ResourcePack {
             throw new IllegalArgumentException(String.format("Namespace '%s' does not exist.", key.getNamespace()));
         }
 
-        return new File(assetsDirectory, String.format("%s/%s/%s", key.getNamespace(), type.getPath(),
-                type.appendExtension(key.getKey())));
+        String path = String.format("%s/%s/%s", key.getNamespace(), type.getPath(), type.appendExtension(key.getKey()));
+        File file = new File(assetsDirectory, path);
+
+        if (!file.exists() && key.getNamespace().equals(NamespacedKey.MINECRAFT) && defaultAssetsDirectory != null)
+            file = new File(defaultAssetsDirectory, path);
+
+        return file;
     }
+
+//    @Override
+//    public NamespacedKey getNamespacedKey(File file) {
+//        Path relativePath = assetsDirectory.toPath().relativize(file.toPath());
+//
+//        String namespace = relativePath.getName(0).toString();
+//        String key = relativePath.subpath(2, relativePath.getNameCount()).toString();
+//
+//        return new NamespacedKey(namespace, key);
+//    }
 
     @Override
     public NamespacedKey getNamespacedKey(File file) {
-        Path relativePath = assetsDirectory.toPath().relativize(file.toPath());
+        String[] split = file.getPath().split(Pattern.quote("assets"), 2);
+        Path relativePath = Path.of(split[1]);
 
         String namespace = relativePath.getName(0).toString();
         String key = relativePath.subpath(2, relativePath.getNameCount()).toString();
