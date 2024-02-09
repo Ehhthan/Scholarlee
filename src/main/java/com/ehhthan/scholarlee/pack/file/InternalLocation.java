@@ -1,15 +1,16 @@
-package com.ehhthan.scholarlee.pack;
+package com.ehhthan.scholarlee.pack.file;
 
+import com.ehhthan.scholarlee.pack.file.AssetLocation;
 import org.jetbrains.annotations.NotNull;
 
-public enum AssetType {
+public enum InternalLocation implements AssetLocation {
     FONT("font", ".json"),
-    TEXTURE("texture", ".png");
+    TEXTURES("textures", ".png");
 
     private final String path;
     private final String extension;
 
-    AssetType(@NotNull String path, @NotNull String extension) {
+    InternalLocation(@NotNull String path, @NotNull String extension) {
         this.path = path;
         this.extension = extension;
     }

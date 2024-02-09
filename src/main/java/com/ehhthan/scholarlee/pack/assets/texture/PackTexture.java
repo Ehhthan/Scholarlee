@@ -1,4 +1,4 @@
-package com.ehhthan.scholarlee.pack.texture;
+package com.ehhthan.scholarlee.pack.assets.texture;
 
 import com.ehhthan.scholarlee.api.image.TrimmedImage;
 

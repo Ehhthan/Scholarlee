@@ -39,10 +39,6 @@ public final class NamespacedKey {
         }
     }
 
-    public static NamespacedKey fromPath(Path path) {
-
-    }
-
     @NotNull
     public String getNamespace() {
         return namespace;

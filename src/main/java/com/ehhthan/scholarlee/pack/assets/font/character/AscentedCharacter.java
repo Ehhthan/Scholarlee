@@ -1,4 +1,4 @@
-package com.ehhthan.scholarlee.pack.font.character;
+package com.ehhthan.scholarlee.pack.assets.font.character;
 
 public class AscentedCharacter extends SizedCharacter {
     private final int ascent;

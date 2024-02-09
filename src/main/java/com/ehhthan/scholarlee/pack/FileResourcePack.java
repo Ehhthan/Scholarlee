@@ -1,6 +1,7 @@
 package com.ehhthan.scholarlee.pack;
 
 import com.ehhthan.scholarlee.api.NamespacedKey;
+import com.ehhthan.scholarlee.pack.file.AssetLocation;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -50,6 +52,10 @@ public class FileResourcePack implements ResourcePack {
         return namespaces;
     }
 
+    public File getPackDirectory() {
+        return packDirectory;
+    }
+
     @Override
     public File getAssetsDirectory() {
         return assetsDirectory;
@@ -79,12 +85,22 @@ public class FileResourcePack implements ResourcePack {
     }
 
     @Override
-    public File getFile(NamespacedKey key, AssetType type) {
+    public File getFile(NamespacedKey key, AssetLocation type) {
         if (!namespaces.contains(key.getNamespace())) {
             throw new IllegalArgumentException(String.format("Namespace '%s' does not exist.", key.getNamespace()));
         }
 
         return new File(assetsDirectory, String.format("%s/%s/%s", key.getNamespace(), type.getPath(),
                 type.appendExtension(key.getKey())));
+    }
+
+    @Override
+    public NamespacedKey getNamespacedKey(File file) {
+        Path relativePath = assetsDirectory.toPath().relativize(file.toPath());
+
+        String namespace = relativePath.getName(0).toString();
+        String key = relativePath.subpath(2, relativePath.getNameCount()).toString();
+
+        return new NamespacedKey(namespace, key);
     }
 }

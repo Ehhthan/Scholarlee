@@ -1,7 +1,7 @@
-package com.ehhthan.scholarlee.pack.font.provider;
+package com.ehhthan.scholarlee.pack.assets.font.provider;
 
 import com.ehhthan.scholarlee.pack.ResourcePack;
-import com.ehhthan.scholarlee.pack.font.character.SizedCharacter;
+import com.ehhthan.scholarlee.pack.assets.font.character.SizedCharacter;
 import com.google.gson.JsonObject;
 
 import java.util.Locale;
@@ -16,6 +16,7 @@ public interface FontProvider {
         if (!json.has("type")) {
             throw new IllegalArgumentException("No type specified.");
         }
+
         return switch (Type.valueOf(json.get("type").getAsString().toUpperCase(Locale.ROOT))) {
             case SPACE ->  new SpaceFontProvider(json);
             case BITMAP -> new BitmapFontProvider(pack, json);

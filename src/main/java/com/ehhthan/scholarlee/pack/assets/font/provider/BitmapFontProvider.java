@@ -1,11 +1,11 @@
-package com.ehhthan.scholarlee.pack.font.provider;
+package com.ehhthan.scholarlee.pack.assets.font.provider;
 
 import com.ehhthan.scholarlee.api.NamespacedKey;
 import com.ehhthan.scholarlee.api.image.TrimmedImage;
 import com.ehhthan.scholarlee.pack.ResourcePack;
-import com.ehhthan.scholarlee.pack.font.character.AscentedCharacter;
-import com.ehhthan.scholarlee.pack.font.character.SizedCharacter;
-import com.ehhthan.scholarlee.pack.texture.PackTexture;
+import com.ehhthan.scholarlee.pack.assets.font.character.AscentedCharacter;
+import com.ehhthan.scholarlee.pack.assets.font.character.SizedCharacter;
+import com.ehhthan.scholarlee.pack.assets.texture.PackTexture;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
