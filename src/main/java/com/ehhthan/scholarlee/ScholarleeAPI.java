@@ -1,8 +1,11 @@
 package com.ehhthan.scholarlee;
 
+import com.ehhthan.scholarlee.pack.FileResourcePack;
+import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.build.BuiltPack;
-import com.ehhthan.scholarlee.pack.build.BuiltPackOptions;
+import com.ehhthan.scholarlee.pack.build.PackOptions;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,15 +33,9 @@ public class ScholarleeAPI {
         return logger;
     }
 
-    public BuiltPack readPack(String key, BuiltPackOptions.Builder builder) {
-        BuiltPack builtPack = new BuiltPack(builder.build());
-        this.packs.put(key, builtPack);
-
-        return builtPack;
-    }
-
-    public BuiltPack readPack(String key, BuiltPackOptions options) {
-        BuiltPack builtPack = new BuiltPack(options);
+    public BuiltPack readPackFromFile(String key, File packFile, PackOptions options) {
+        ResourcePack pack = new FileResourcePack(packFile, options);
+        BuiltPack builtPack = new BuiltPack(pack);
         this.packs.put(key, builtPack);
 
         return builtPack;

@@ -18,8 +18,8 @@ public class BuiltPack {
 
     private final Map<NamespacedKey, PackFont> fonts;
 
-    public BuiltPack(BuiltPackOptions options) {
-        this.pack = options.getPack();
+    public BuiltPack(ResourcePack pack) {
+        this.pack = pack;
         this.fonts = buildFonts();
     }
 
@@ -51,7 +51,7 @@ public class BuiltPack {
         Map<NamespacedKey, PackFont> fonts = new HashMap<>();
 
         // default fonts initialized before custom, allows for overrides to operate as expected
-        if (pack.isUsingDefaultAssets()) {
+        if (pack.getOptions().isUsingDefaultAssets()) {
             fonts.putAll(readFonts(pack.getDefaultAssetsDirectory(), NamespacedKey.MINECRAFT));
         }
 

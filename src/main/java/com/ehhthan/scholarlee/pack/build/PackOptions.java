@@ -1,25 +1,24 @@
 package com.ehhthan.scholarlee.pack.build;
 
-import com.ehhthan.scholarlee.pack.FileResourcePack;
 import com.ehhthan.scholarlee.pack.ResourcePack;
 
 import java.io.File;
 
-public class BuiltPackOptions {
-    private final ResourcePack pack;
+public class PackOptions {
     private final boolean useDefaultAssets;
+    private final String defaultAssetVersion;
 
-    private BuiltPackOptions(Builder builder) {
+    private PackOptions(Builder builder) {
         this.useDefaultAssets = builder.useDefaultAssets;
-        this.pack = new FileResourcePack(builder.packFile, (useDefaultAssets) ? builder.assetVersion : null);
+        this.defaultAssetVersion = builder.assetVersion;
     }
 
-    public static Builder file(File file) {
-        return new Builder(file);
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public ResourcePack getPack() {
-        return pack;
+    public String getDefaultAssetVersion() {
+        return defaultAssetVersion;
     }
 
     public boolean isUsingDefaultAssets() {
@@ -27,17 +26,10 @@ public class BuiltPackOptions {
     }
 
     public static class Builder {
-        private final File packFile;
         private boolean useDefaultAssets = true;
         private String assetVersion = "1_20_4";
 
-        Builder(File file) {
-            this.packFile = file;
-        }
-
-        public File packFile() {
-            return packFile;
-        }
+        Builder() {}
 
         public boolean useDefaultAssets() {
             return useDefaultAssets;
@@ -55,8 +47,8 @@ public class BuiltPackOptions {
             this.assetVersion = assetVersion;
         }
 
-        public BuiltPackOptions build() {
-            return new BuiltPackOptions(this);
+        public PackOptions build() {
+            return new PackOptions(this);
         }
     }
 }

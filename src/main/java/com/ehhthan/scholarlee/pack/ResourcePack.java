@@ -2,6 +2,7 @@ package com.ehhthan.scholarlee.pack;
 
 import com.ehhthan.scholarlee.api.NamespacedKey;
 import com.ehhthan.scholarlee.pack.assets.font.provider.FontProvider;
+import com.ehhthan.scholarlee.pack.build.PackOptions;
 import com.ehhthan.scholarlee.pack.file.AssetLocation;
 import com.ehhthan.scholarlee.pack.file.InternalLocation;
 import com.google.gson.JsonObject;
@@ -14,13 +15,11 @@ import java.util.Map;
 import java.util.Set;
 
 public interface ResourcePack {
+    PackOptions getOptions();
+
     Set<String> getNamespaces();
 
     File getAssetsDirectory();
-
-    default boolean isUsingDefaultAssets() {
-        return getDefaultAssetsDirectory() != null;
-    }
 
     File getDefaultAssetsDirectory();
 
