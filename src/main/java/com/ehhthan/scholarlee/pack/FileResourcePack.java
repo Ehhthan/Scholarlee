@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,12 +42,16 @@ public class FileResourcePack implements ResourcePack {
         }
 
         if (options.isUsingDefaultAssets()) {
-            URL resource = this.getClass().getResource(String.format("mc/%s/assets", options.getDefaultAssetVersion()));
+            URL url = this.getClass().getClassLoader().getResource(String.format("mc/%s/assets", options.getDefaultAssetVersion()));
 
-            if (resource == null)
-                throw new IllegalArgumentException(String.format("Cannot load default assets with version '%s'.", options.getDefaultAssetVersion()));
+            File resource;
+            try {
+                resource = new File(url.toURI());
+            } catch (URISyntaxException e) {
+                resource = new File(url.getPath());
+            }
 
-            this.defaultAssetsDirectory = new File(resource.getPath());
+            this.defaultAssetsDirectory = resource;
         } else {
             this.defaultAssetsDirectory = null;
         }
