@@ -2,6 +2,7 @@ package com.ehhthan.scholarlee.pack.assets.font.provider;
 
 import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.assets.font.character.SizedCharacter;
+import com.ehhthan.scholarlee.pack.build.BuiltPack;
 import com.google.gson.JsonObject;
 
 import java.util.Locale;
@@ -21,9 +22,9 @@ public interface FontProvider {
             case SPACE ->  new SpaceFontProvider(json);
             case BITMAP -> new BitmapFontProvider(pack, json);
             case REFERENCE -> new ReferenceFontProvider(pack, json);
+            case UNIHEX -> new UnihexFontProvider(pack, json);
             default -> null;
         };
-
     }
 
     enum Type {

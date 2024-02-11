@@ -1,10 +1,10 @@
 package com.ehhthan.scholarlee.pack.file;
 
-import com.ehhthan.scholarlee.pack.file.AssetLocation;
 import org.jetbrains.annotations.NotNull;
 
 public enum InternalLocation implements AssetLocation {
     FONT("font", ".json"),
+    FONT_HEX_FILE("", ".zip"),
     TEXTURES("textures", ".png");
 
     private final String path;

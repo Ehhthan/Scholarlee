@@ -2,7 +2,6 @@ package com.ehhthan.scholarlee.api;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 public final class NamespacedKey {

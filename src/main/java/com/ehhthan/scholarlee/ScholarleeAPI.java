@@ -30,6 +30,13 @@ public class ScholarleeAPI {
         return logger;
     }
 
+    public BuiltPack readPack(String key, BuiltPackOptions.Builder builder) {
+        BuiltPack builtPack = new BuiltPack(builder.build());
+        this.packs.put(key, builtPack);
+
+        return builtPack;
+    }
+
     public BuiltPack readPack(String key, BuiltPackOptions options) {
         BuiltPack builtPack = new BuiltPack(options);
         this.packs.put(key, builtPack);

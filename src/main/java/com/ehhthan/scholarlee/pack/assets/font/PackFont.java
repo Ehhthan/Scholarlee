@@ -5,6 +5,7 @@ import com.ehhthan.scholarlee.api.NamespacedKey;
 import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.assets.font.character.SizedCharacter;
 import com.ehhthan.scholarlee.pack.assets.font.provider.FontProvider;
+import com.ehhthan.scholarlee.pack.build.BuiltPack;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -34,6 +35,8 @@ public class PackFont {
                     ScholarleeAPI.get().getLogger().log(System.Logger.Level.ERROR, String.format("Could not load a font provider for font '%s': %s", namespacedKey, e.getMessage()));
                 }
             }
+        } else {
+            throw new IllegalArgumentException("No providers defined.");
         }
     }
 

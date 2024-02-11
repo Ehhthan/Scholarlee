@@ -1,7 +1,7 @@
 package com.ehhthan.scholarlee.pack.assets.font.provider;
 
 import com.ehhthan.scholarlee.api.NamespacedKey;
-import com.ehhthan.scholarlee.api.image.TrimmedImage;
+import com.ehhthan.scholarlee.api.unihex.TrimData;
 import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.assets.font.character.AscentedCharacter;
 import com.ehhthan.scholarlee.pack.assets.font.character.SizedCharacter;
@@ -33,12 +33,12 @@ public class BitmapFontProvider implements FontProvider {
 
         BufferedImage base = pack.getTextureFile(NamespacedKey.fromString(file));
         int rows = codepoints.length, columns = codepoints[0].length;
-        TrimmedImage[][] tiles = PackTexture.tiles(base, rows, columns);
+        TrimData[][] tiles = PackTexture.tiles(base, rows, columns);
         int tileHeight = base.getHeight() / rows;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
                 int codepoint = codepoints[i][j];
-                TrimmedImage image = tiles[i][j];
+                TrimData image = tiles[i][j];
                 if (codepoint != 0 && image != null) {
                     // scale in double format.
                     double coefficient = ((double) height) / tileHeight;

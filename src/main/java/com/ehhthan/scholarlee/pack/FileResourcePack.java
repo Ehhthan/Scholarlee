@@ -1,6 +1,7 @@
 package com.ehhthan.scholarlee.pack;
 
 import com.ehhthan.scholarlee.api.NamespacedKey;
+import com.ehhthan.scholarlee.pack.assets.font.provider.FontProvider;
 import com.ehhthan.scholarlee.pack.file.AssetLocation;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -18,7 +19,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -124,19 +127,14 @@ public class FileResourcePack implements ResourcePack {
         return file;
     }
 
-//    @Override
-//    public NamespacedKey getNamespacedKey(File file) {
-//        Path relativePath = assetsDirectory.toPath().relativize(file.toPath());
-//
-//        String namespace = relativePath.getName(0).toString();
-//        String key = relativePath.subpath(2, relativePath.getNameCount()).toString();
-//
-//        return new NamespacedKey(namespace, key);
-//    }
-
     @Override
     public NamespacedKey getNamespacedKey(File file) {
         String[] split = file.getPath().split(Pattern.quote("assets"), 2);
+
+        if (split.length != 2) {
+            throw new IllegalArgumentException(String.format("Could not generate NamespacedKey for file '%s'", file.getPath()));
+        }
+
         Path relativePath = Path.of(split[1]);
 
         String namespace = relativePath.getName(0).toString();
