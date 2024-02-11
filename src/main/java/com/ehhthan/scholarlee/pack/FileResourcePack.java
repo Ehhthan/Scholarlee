@@ -50,13 +50,12 @@ public class FileResourcePack implements ResourcePack {
         }
 
         if (version != null) {
-            this.defaultAssetsDirectory = new File("C:\\Users\\Ethan\\Desktop\\Plugins\\Scholarlee\\src\\main\\resources\\mc\\1_20_4\\assets");
-//            URL resource = this.getClass().getResource(String.format("mc/%s/assets", version));
-//
-//            if (resource == null)
-//                throw new IllegalArgumentException(String.format("Cannot load default assets with version '%s'.", version));
-//
-//            this.defaultAssetsDirectory = new File(resource.getPath());
+            URL resource = this.getClass().getResource(String.format("mc/%s/assets", version));
+
+            if (resource == null)
+                throw new IllegalArgumentException(String.format("Cannot load default assets with version '%s'.", version));
+
+            this.defaultAssetsDirectory = new File(resource.getPath());
         } else {
             this.defaultAssetsDirectory = null;
         }
