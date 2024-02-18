@@ -1,50 +1,46 @@
 package com.ehhthan.scholarlee.pack.build;
 
-import com.ehhthan.scholarlee.pack.ResourcePack;
-
-import java.io.File;
-
 public class PackOptions {
-    private final boolean useDefaultAssets;
-    private final String defaultAssetVersion;
+    private final boolean useProvided;
+    private final String providedVersion;
 
     private PackOptions(Builder builder) {
-        this.useDefaultAssets = builder.useDefaultAssets;
-        this.defaultAssetVersion = builder.assetVersion;
+        this.useProvided = builder.useProvided;
+        this.providedVersion = builder.providedVersion;
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public String getDefaultAssetVersion() {
-        return defaultAssetVersion;
+    public String getProvidedVersion() {
+        return providedVersion;
     }
 
-    public boolean isUsingDefaultAssets() {
-        return useDefaultAssets;
+    public boolean isUsingProvided() {
+        return useProvided;
     }
 
     public static class Builder {
-        private boolean useDefaultAssets = true;
-        private String assetVersion = "1_20_4";
+        private boolean useProvided = true;
+        private String providedVersion = "1_20_4";
 
         Builder() {}
 
-        public boolean useDefaultAssets() {
-            return useDefaultAssets;
+        public boolean useProvided() {
+            return useProvided;
         }
 
-        public void useDefaultAssets(boolean useDefaultAssets) {
-            this.useDefaultAssets = useDefaultAssets;
+        public void useProvided(boolean useDefaultAssets) {
+            this.useProvided = useDefaultAssets;
         }
 
-        public String assetVersion() {
-            return assetVersion;
+        public String providedVersion() {
+            return providedVersion;
         }
 
-        public void assetVersion(String assetVersion) {
-            this.assetVersion = assetVersion;
+        public void providedVersion(String assetVersion) {
+            this.providedVersion = assetVersion;
         }
 
         public PackOptions build() {

@@ -2,7 +2,6 @@ package com.ehhthan.scholarlee.pack.assets.font.provider;
 
 import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.assets.font.character.SizedCharacter;
-import com.ehhthan.scholarlee.pack.build.BuiltPack;
 import com.google.gson.JsonObject;
 
 import java.util.Locale;

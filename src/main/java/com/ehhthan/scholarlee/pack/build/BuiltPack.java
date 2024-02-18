@@ -3,9 +3,7 @@ package com.ehhthan.scholarlee.pack.build;
 import com.ehhthan.scholarlee.api.NamespacedKey;
 import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.assets.font.PackFont;
-import com.ehhthan.scholarlee.pack.assets.font.provider.FontProvider;
 import com.ehhthan.scholarlee.pack.file.InternalLocation;
-import com.google.gson.JsonObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,8 +49,8 @@ public class BuiltPack {
         Map<NamespacedKey, PackFont> fonts = new HashMap<>();
 
         // default fonts initialized before custom, allows for overrides to operate as expected
-        if (pack.getOptions().isUsingDefaultAssets()) {
-            fonts.putAll(readFonts(pack.getDefaultAssetsDirectory(), NamespacedKey.MINECRAFT));
+        if (pack.getOptions().isUsingProvided()) {
+            fonts.putAll(readFonts(pack.getProvided(), NamespacedKey.MINECRAFT));
         }
 
         for (String namespace : pack.getNamespaces()) {

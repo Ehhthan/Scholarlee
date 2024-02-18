@@ -1,11 +1,9 @@
 package com.ehhthan.scholarlee.pack.assets.font;
 
-import com.ehhthan.scholarlee.ScholarleeAPI;
 import com.ehhthan.scholarlee.api.NamespacedKey;
 import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.assets.font.character.SizedCharacter;
 import com.ehhthan.scholarlee.pack.assets.font.provider.FontProvider;
-import com.ehhthan.scholarlee.pack.build.BuiltPack;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -13,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class PackFont {
     private final NamespacedKey namespacedKey;
@@ -32,7 +31,7 @@ public class PackFont {
                         characters.putAll(fontProvider.getCharacters());
                     }
                 } catch (IllegalArgumentException e) {
-                    ScholarleeAPI.get().getLogger().log(System.Logger.Level.ERROR, String.format("Could not load a font provider for font '%s': %s", namespacedKey, e.getMessage()));
+                    pack.getAPI().getLogger().log(Level.WARNING, String.format("Could not load a font provider for font '%s': %s", namespacedKey, e.getMessage()));
                 }
             }
         } else {

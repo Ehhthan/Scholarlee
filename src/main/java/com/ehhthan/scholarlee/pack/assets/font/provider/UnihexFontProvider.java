@@ -71,6 +71,8 @@ public class UnihexFontProvider implements FontProvider {
                             characters.put(codepoint, new SizedCharacter(codepoint, data.getLeftIndent() + data.getWidth(), data.getHeight()));
                         }
                     }
+                    zipFile.close();
+                    br.close();
                 }
             }
         } catch (IOException e) {

@@ -1,18 +1,18 @@
 package com.ehhthan.scholarlee.pack;
 
+import com.ehhthan.scholarlee.ScholarleeAPI;
 import com.ehhthan.scholarlee.api.NamespacedKey;
 import com.ehhthan.scholarlee.pack.build.PackOptions;
 import com.ehhthan.scholarlee.pack.file.AssetLocation;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -20,15 +20,17 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class FileResourcePack implements ResourcePack {
+    private final ScholarleeAPI api;
     private final PackOptions options;
     private final Gson gson;
     private final File packDirectory;
     private final File assetsDirectory;
-    private final File defaultAssetsDirectory;
+    private File providedDirectory = null;
 
     private final Set<String> namespaces = new HashSet<>();
 
-    public FileResourcePack(File pack, PackOptions options) {
+    public FileResourcePack(ScholarleeAPI api, File pack, PackOptions options) {
+        this.api = api;
         this.options = options;
         this.gson = new Gson();
         this.packDirectory = pack;
@@ -36,25 +38,11 @@ public class FileResourcePack implements ResourcePack {
             throw new IllegalArgumentException("Pack directory does not exist.");
         }
 
+        if (options.isUsingProvided()) {
+            this.providedDirectory = api.getProvidedAssets(options.getProvidedVersion());
+        }
+
         this.assetsDirectory = new File(pack, "assets");
-        if (!assetsDirectory.exists() || !assetsDirectory.isDirectory()) {
-            throw new IllegalArgumentException("No assets directory exists.");
-        }
-
-        if (options.isUsingDefaultAssets()) {
-            URL url = this.getClass().getClassLoader().getResource(String.format("mc/%s/assets", options.getDefaultAssetVersion()));
-
-            File resource;
-            try {
-                resource = new File(url.toURI());
-            } catch (URISyntaxException e) {
-                resource = new File(url.getPath());
-            }
-
-            this.defaultAssetsDirectory = resource;
-        } else {
-            this.defaultAssetsDirectory = null;
-        }
 
         File[] namespaceFiles = assetsDirectory.listFiles();
         if (namespaceFiles != null)
@@ -62,6 +50,11 @@ public class FileResourcePack implements ResourcePack {
                 if (file.isDirectory())
                     namespaces.add(file.getName());
             }
+    }
+
+    @Override
+    public ScholarleeAPI getAPI() {
+        return api;
     }
 
     @Override
@@ -84,8 +77,9 @@ public class FileResourcePack implements ResourcePack {
     }
 
     @Override
-    public File getDefaultAssetsDirectory() {
-        return defaultAssetsDirectory;
+    @Nullable
+    public File getProvided() {
+        return providedDirectory;
     }
 
     @Override
@@ -105,6 +99,7 @@ public class FileResourcePack implements ResourcePack {
         try {
             reader = Files.newBufferedReader(file.toPath());
         } catch (IOException e) {
+            e.printStackTrace();
             throw new IllegalArgumentException("Json file cannot be read: " + file.toPath());
         }
 
@@ -120,8 +115,8 @@ public class FileResourcePack implements ResourcePack {
         String path = String.format("%s/%s/%s", key.getNamespace(), type.getPath(), type.appendExtension(key.getKey()));
         File file = new File(assetsDirectory, path);
 
-        if (!file.exists() && key.getNamespace().equals(NamespacedKey.MINECRAFT) && options.isUsingDefaultAssets())
-            file = new File(defaultAssetsDirectory, path);
+        if (!file.exists() && key.getNamespace().equals(NamespacedKey.MINECRAFT) && options.isUsingProvided())
+            file = new File(getProvided(), path);
 
         return file;
     }
