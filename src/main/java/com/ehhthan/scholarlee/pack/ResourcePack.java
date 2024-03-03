@@ -1,41 +1,45 @@
 package com.ehhthan.scholarlee.pack;
 
-import com.ehhthan.scholarlee.ScholarleeAPI;
-import com.ehhthan.scholarlee.api.NamespacedKey;
-import com.ehhthan.scholarlee.pack.build.PackOptions;
-import com.ehhthan.scholarlee.pack.file.AssetLocation;
-import com.ehhthan.scholarlee.pack.file.InternalLocation;
-import com.google.gson.JsonObject;
+import com.ehhthan.scholarlee.pack.assets.font.PackFont;
+import com.ehhthan.scholarlee.pack.assets.font.provider.FontProvider;
+import com.ehhthan.scholarlee.pack.key.NamespacedKey;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.Set;
+import java.util.zip.ZipFile;
 
 public interface ResourcePack {
-    ScholarleeAPI getAPI();
+    Gson GSON = new GsonBuilder()
+        .setPrettyPrinting()
+        .registerTypeAdapter(FontProvider.class, new FontProvider.Type.Adapter())
+        .create();
 
-    PackOptions getOptions();
+    BufferedImage getTexture(NamespacedKey namespacedKey);
 
-    Set<String> getNamespaces();
+    PackFont getFont(NamespacedKey namespacedKey);
 
-    File getAssetsDirectory();
+    ZipFile getZipFile(NamespacedKey namespacedKey);
 
-    File getProvided();
+    enum AssetType {
+        FONT("font", ".json"),
+        TEXTURE("textures", ".png"),
+        ZIP_FILE(null, ".zip");
 
-    BufferedImage getImageFile(File file);
+        private final String parent;
+        private final String extension;
 
-    JsonObject getJsonFile(File file);
+        AssetType(String parent, String extension) {
+            this.parent = parent;
+            this.extension = extension;
+        }
 
-    File getFile(NamespacedKey namespacedKey, AssetLocation type);
+        public String getParent() {
+            return parent;
+        }
 
-    NamespacedKey getNamespacedKey(File file);
-
-    default BufferedImage getTextureFile(NamespacedKey namespacedKey) {
-        return getImageFile(getFile(namespacedKey, InternalLocation.TEXTURES));
-    };
-
-    default JsonObject getFontFile(NamespacedKey namespacedKey) {
-        return getJsonFile(getFile(namespacedKey, InternalLocation.FONT));
-    };
-
+        public String getExtension() {
+            return extension;
+        }
+    }
 }

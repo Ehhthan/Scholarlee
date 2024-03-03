@@ -1,12 +1,9 @@
 package com.ehhthan.scholarlee.pack;
 
-import com.ehhthan.scholarlee.ScholarleeAPI;
-import com.ehhthan.scholarlee.api.NamespacedKey;
-import com.ehhthan.scholarlee.pack.build.PackOptions;
-import com.ehhthan.scholarlee.pack.file.AssetLocation;
+import com.ehhthan.scholarlee.pack.assets.font.PackFont;
+import com.ehhthan.scholarlee.pack.key.NamespacedKey;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import org.jetbrains.annotations.Nullable;
+import com.google.gson.GsonBuilder;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -15,125 +12,61 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.zip.ZipFile;
 
 public class FileResourcePack implements ResourcePack {
-    private final ScholarleeAPI api;
-    private final PackOptions options;
-    private final Gson gson;
-    private final File packDirectory;
-    private final File assetsDirectory;
-    private File providedDirectory = null;
+    private final File packFile;
 
-    private final Set<String> namespaces = new HashSet<>();
-
-    public FileResourcePack(ScholarleeAPI api, File pack, PackOptions options) {
-        this.api = api;
-        this.options = options;
-        this.gson = new Gson();
-        this.packDirectory = pack;
-        if (!packDirectory.exists() || !packDirectory.isDirectory()) {
+    public FileResourcePack(File pack) {
+        if (!pack.exists() || !pack.isDirectory()) {
             throw new IllegalArgumentException("Pack directory does not exist.");
         }
 
-        if (options.isUsingProvided()) {
-            this.providedDirectory = api.getProvidedAssets(options.getProvidedVersion());
+        this.packFile = new File(pack, "assets");
+
+        if (!packFile.exists() || !packFile.isDirectory()) {
+            throw new IllegalArgumentException("Assets directory does not exist.");
         }
-
-        this.assetsDirectory = new File(pack, "assets");
-
-        File[] namespaceFiles = assetsDirectory.listFiles();
-        if (namespaceFiles != null)
-            for (File file : namespaceFiles) {
-                if (file.isDirectory())
-                    namespaces.add(file.getName());
-            }
     }
 
     @Override
-    public ScholarleeAPI getAPI() {
-        return api;
-    }
+    public BufferedImage getTexture(NamespacedKey namespacedKey) {
+        File file = getFile(namespacedKey, AssetType.TEXTURE);
 
-    @Override
-    public PackOptions getOptions() {
-        return options;
-    }
-
-    @Override
-    public Set<String> getNamespaces() {
-        return namespaces;
-    }
-
-    public File getPackDirectory() {
-        return packDirectory;
-    }
-
-    @Override
-    public File getAssetsDirectory() {
-        return assetsDirectory;
-    }
-
-    @Override
-    @Nullable
-    public File getProvided() {
-        return providedDirectory;
-    }
-
-    @Override
-    public BufferedImage getImageFile(File file) {
-        BufferedImage image;
         try {
-            image = ImageIO.read(file);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Image file cannot be read: " + file.getPath());
-        }
-        return image;
-    }
-
-    @Override
-    public JsonObject getJsonFile(File file) {
-        BufferedReader reader;
-        try {
-            reader = Files.newBufferedReader(file.toPath());
+            return ImageIO.read(file);
         } catch (IOException e) {
             e.printStackTrace();
-            throw new IllegalArgumentException("Json file cannot be read: " + file.toPath());
+            throw new IllegalArgumentException("Image file cannot be read: " + file.getPath());
         }
-
-        return gson.fromJson(reader, JsonObject.class);
     }
 
     @Override
-    public File getFile(NamespacedKey key, AssetLocation type) {
-        if (!namespaces.contains(key.getNamespace())) {
-            throw new IllegalArgumentException(String.format("Namespace '%s' does not exist.", key.getNamespace()));
+    public PackFont getFont(NamespacedKey namespacedKey) {
+        Path path = getFile(namespacedKey, AssetType.FONT).toPath();
+
+        BufferedReader reader;
+        try {
+            reader = Files.newBufferedReader(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("Json file cannot be read: " + path);
         }
 
-        String path = String.format("%s/%s/%s", key.getNamespace(), type.getPath(), type.appendExtension(key.getKey()));
-        File file = new File(assetsDirectory, path);
-
-        if (!file.exists() && key.getNamespace().equals(NamespacedKey.MINECRAFT) && options.isUsingProvided())
-            file = new File(getProvided(), path);
-
-        return file;
+        return GSON.fromJson(reader, PackFont.class);
     }
 
     @Override
-    public NamespacedKey getNamespacedKey(File file) {
-        String[] split = file.getPath().split(Pattern.quote("assets"), 2);
-
-        if (split.length != 2) {
-            throw new IllegalArgumentException(String.format("Could not generate NamespacedKey for file '%s'", file.getPath()));
+    public ZipFile getZipFile(NamespacedKey namespacedKey) {
+        File file = getFile(namespacedKey, AssetType.ZIP_FILE);
+        try {
+            return new ZipFile(file);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Zip file cannot be read: " + file.getPath());
         }
+    }
 
-        Path relativePath = Path.of(split[1]);
-
-        String namespace = relativePath.getName(0).toString();
-        String key = relativePath.subpath(2, relativePath.getNameCount()).toString();
-
-        return new NamespacedKey(namespace, key);
+    private File getFile(NamespacedKey key, AssetType type) {
+        return new File(packFile, key.asPath(type));
     }
 }

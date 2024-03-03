@@ -1,8 +1,12 @@
-package com.ehhthan.scholarlee.api;
+package com.ehhthan.scholarlee.pack.key;
 
+import com.ehhthan.scholarlee.pack.ResourcePack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class NamespacedKey {
     public static final String MINECRAFT = "minecraft";
@@ -21,7 +25,7 @@ public final class NamespacedKey {
             throw new IllegalArgumentException(String.format("Invalid key. Must be [a-z0-9/._-]: %s", key));
 
         this.namespace = namespace;
-        this.key = key;
+        this.key = key.split("\\.")[0];
 
         if (toString().length() >= 256)
             throw new IllegalArgumentException("NamespacedKey must be less than 256 characters.");
@@ -46,6 +50,20 @@ public final class NamespacedKey {
     @NotNull
     public String getKey() {
         return key;
+    }
+
+    public String asPath(ResourcePack.AssetType type) {
+        return asPath(type.getParent(), type.getExtension());
+    }
+
+    public String asPath(@Nullable String parent, @Nullable String extension) {
+        String key = this.key;
+        if (extension != null) {
+            key = (extension.startsWith(".")) ? key + extension : key + '.' + extension;
+        }
+        return Stream.of(namespace, parent, key)
+            .filter(s -> s != null && !s.isEmpty())
+            .collect(Collectors.joining("/"));
     }
 
     @Override

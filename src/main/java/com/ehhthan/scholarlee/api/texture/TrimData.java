@@ -1,4 +1,4 @@
-package com.ehhthan.scholarlee.api.unihex;
+package com.ehhthan.scholarlee.api.texture;
 
 import com.ehhthan.scholarlee.api.sizes.Sized;
 

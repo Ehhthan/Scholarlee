@@ -1,93 +1,99 @@
 package com.ehhthan.scholarlee;
 
-import com.ehhthan.scholarlee.file.DirectoryCopyFileVisitor;
 import com.ehhthan.scholarlee.pack.FileResourcePack;
 import com.ehhthan.scholarlee.pack.ResourcePack;
-import com.ehhthan.scholarlee.pack.build.BuiltPack;
-import com.ehhthan.scholarlee.pack.build.PackOptions;
-import org.bukkit.plugin.Plugin;
+import net.lingala.zip4j.ZipFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Collection;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
 
 public class ScholarleeAPI {
-    private static final Map<Plugin, ScholarleeAPI> API_INSTANCES = new HashMap<>();
+    private static final System.Logger LOGGER = System.getLogger("ScholarleeAPI");
+    private static ScholarleeAPI INSTANCE;
 
-    private final Plugin plugin;
-    private final File workingDirectory;
+    private final Map<ProvidedVersion, ResourcePack> provided = new HashMap<>();
 
-    private final Map<String, BuiltPack> packs = new HashMap<>();
-
-    private ScholarleeAPI(Plugin plugin) {
-        this.workingDirectory = new File(plugin.getDataFolder().getParentFile(), "Scholarlee");
-
-        this.plugin = plugin;
-        workingDirectory.mkdirs();
-
+    private ScholarleeAPI() {
         try {
-            new DirectoryCopyFileVisitor().copy("mc", new File(workingDirectory, "versions").toPath());
-        } catch (URISyntaxException | IOException e) {
+            File workingDir = Files.createTempDirectory("scholarlee").toFile();
+
+            File versionsDir = new File(workingDir, "versions");
+            versionsDir.mkdirs();
+
+            File providedDir = new File(workingDir, "provided");
+            providedDir.mkdirs();
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                deleteDir(workingDir);
+            }));
+
+            // Generate MC Assets
+            for (ProvidedVersion value : ProvidedVersion.values()) {
+                File provided = new File(workingDir, value.path);
+
+                InputStream stream = getClass().getResourceAsStream(value.path);
+
+                if (stream != null)
+                    Files.copy(stream, provided.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+                File extract = new File(providedDir, value.name());
+                extract.mkdirs();
+
+                new ZipFile(provided).extractAll(extract.getPath());
+                this.provided.put(value, new FileResourcePack(extract));
+            }
+
+
+        } catch (IOException e) {
             e.printStackTrace();
             throw new IllegalStateException("Provided assets could not be created.");
         }
-
     }
 
-    public static ScholarleeAPI get(Plugin plugin) {
-        if (!API_INSTANCES.containsKey(plugin))
-            API_INSTANCES.put(plugin, new ScholarleeAPI(plugin));
+    public static ScholarleeAPI get() {
+        if (INSTANCE == null) {
+            INSTANCE = new ScholarleeAPI();
+        }
 
-        return API_INSTANCES.get(plugin);
+        return INSTANCE;
     }
 
-    public Logger getLogger() {
-        return plugin.getLogger();
+    public static System.Logger getLogger() {
+        return LOGGER;
     }
 
-    public File getWorkingDirectory() {
-        return workingDirectory;
+    public ResourcePack readPackFromFile(File file) {
+        return new FileResourcePack(file);
     }
 
-    public BuiltPack readPackFromFile(String key, File packFile) {
-        return readPackFromFile(key, packFile, PackOptions.builder().build());
+    public ResourcePack getProvided(ProvidedVersion version) {
+        return provided.get(version);
     }
 
-    public BuiltPack readPackFromFile(String key, File packFile, PackOptions options) {
-        ResourcePack pack = new FileResourcePack(this, packFile, options);
-        BuiltPack builtPack = new BuiltPack(pack);
-        this.packs.put(key, builtPack);
-
-        return builtPack;
+    private void deleteDir(File file) {
+        File[] contents = file.listFiles();
+        if (contents != null) {
+            for (File f : contents) {
+                if (! Files.isSymbolicLink(f.toPath())) {
+                    deleteDir(f);
+                }
+            }
+        }
+        file.delete();
     }
 
-    public BuiltPack getPack(String key) {
-        return packs.get(key);
-    }
+    public enum ProvidedVersion {
+        V1_20_4("/versions/1_20_4.zip");
 
-    public boolean hasPack(String key) {
-        return packs.containsKey(key);
-    }
+        private final String path;
 
-    public Collection<BuiltPack> getPacks() {
-        return packs.values();
-    }
-
-    public Set<String> getPackKeys() {
-        return packs.keySet();
-    }
-
-    public File getProvidedAssets(String version) {
-        File directory = new File(workingDirectory, String.format("versions/%s/assets", version));
-
-        if (!directory.exists())
-            throw new IllegalStateException("Requested provided assets do not exist.");
-
-        return directory;
+        ProvidedVersion(String path) {
+            this.path = path;
+        }
     }
 }

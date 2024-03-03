@@ -1,6 +1,6 @@
 package com.ehhthan.scholarlee.pack.assets.font.provider;
 
-import com.ehhthan.scholarlee.api.NamespacedKey;
+import com.ehhthan.scholarlee.pack.key.NamespacedKey;
 import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.assets.font.character.SizedCharacter;
 import com.google.gson.JsonElement;
@@ -12,20 +12,21 @@ import java.util.Map;
 public class ReferenceFontProvider implements FontProvider {
     private final String id;
 
-    private final Map<Integer, SizedCharacter> characters = new HashMap<>();
+    public ReferenceFontProvider(Builder builder) {
+        this.id = builder.id;
+    }
 
-    public ReferenceFontProvider(ResourcePack pack, JsonObject json) {
-        this.id = json.get("id").getAsString();
-        for (JsonElement jsonProvider : pack.getFontFile(NamespacedKey.fromString(id)).get("providers").getAsJsonArray()) {
-            FontProvider fontProvider = FontProvider.get(pack, jsonProvider.getAsJsonObject());
+    public static Builder builder(String id) {
+        return new Builder(id);
+    }
 
-            if (fontProvider instanceof ReferenceFontProvider reference && reference.getId().equals(id)) {
-                throw new IllegalStateException("ReferenceFontProvider cannot reference itself.");
-            }
+    public static Builder json(JsonObject json) {
+        return new Builder(json);
+    }
 
-            if (fontProvider != null && fontProvider.getCharacters() != null)
-                characters.putAll(fontProvider.getCharacters());
-        }
+    @Override
+    public Type getType() {
+        return Type.REFERENCE;
     }
 
     public String getId() {
@@ -33,12 +34,57 @@ public class ReferenceFontProvider implements FontProvider {
     }
 
     @Override
-    public Map<Integer, SizedCharacter> getCharacters() {
+    public Map<Integer, SizedCharacter> buildSizedCharacters(ResourcePack pack) {
+        Map<Integer, SizedCharacter> characters = new HashMap<>();
+
+        for (FontProvider fontProvider : pack.getFont(NamespacedKey.fromString(id)).getProviders()) {
+
+            if (fontProvider instanceof ReferenceFontProvider reference && reference.getId().equals(id)) {
+                throw new IllegalStateException("ReferenceFontProvider cannot reference itself.");
+            }
+
+            if (fontProvider != null && fontProvider.buildSizedCharacters(pack) != null)
+                characters.putAll(fontProvider.buildSizedCharacters(pack));
+        }
+
         return characters;
     }
 
     @Override
-    public Type getType() {
-        return Type.REFERENCE;
+    public JsonElement toJson() {
+        JsonObject json = new JsonObject();
+
+        json.addProperty("type", getType().toString());
+        json.addProperty("id", id);
+
+        return json;
+    }
+
+    @Override
+    public Builder toBuilder() {
+        return builder(id);
+    }
+
+    public static class Builder implements FontProvider.Builder {
+        private final String id;
+
+        private Builder(String id) {
+            this.id = id;
+        }
+
+        private Builder(JsonObject json) {
+            if (!json.has("id"))
+                throw new IllegalArgumentException("No id is defined.");
+
+            this.id = json.get("id").getAsString();
+        }
+
+        public String id() {
+            return id;
+        }
+
+        public ReferenceFontProvider build() {
+            return new ReferenceFontProvider(this);
+        }
     }
 }

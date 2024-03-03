@@ -1,53 +1,60 @@
 package com.ehhthan.scholarlee.pack.assets.font;
 
-import com.ehhthan.scholarlee.api.NamespacedKey;
 import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.assets.font.character.SizedCharacter;
 import com.ehhthan.scholarlee.pack.assets.font.provider.FontProvider;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 public class PackFont {
-    private final NamespacedKey namespacedKey;
+    private final List<FontProvider> providers;
 
-    private final List<FontProvider> providers = new ArrayList<>();
-    private final Map<Integer, SizedCharacter> characters = new HashMap<>();
-
-    public PackFont(ResourcePack pack, NamespacedKey namespacedKey) {
-        this.namespacedKey = namespacedKey;
-        JsonObject file = pack.getFontFile(namespacedKey);
-        if (file.has("providers")) {
-            for (JsonElement jsonProvider : file.get("providers").getAsJsonArray()) {
-                try {
-                    FontProvider fontProvider = FontProvider.get(pack, jsonProvider.getAsJsonObject());
-                    if (fontProvider != null) {
-                        providers.add(fontProvider);
-                        characters.putAll(fontProvider.getCharacters());
-                    }
-                } catch (IllegalArgumentException e) {
-                    pack.getAPI().getLogger().log(Level.WARNING, String.format("Could not load a font provider for font '%s': %s", namespacedKey, e.getMessage()));
-                }
-            }
-        } else {
-            throw new IllegalArgumentException("No providers defined.");
-        }
+    private PackFont(Builder builder) {
+        this.providers = builder.providers;
     }
 
-    public NamespacedKey getNamespacedKey() {
-        return namespacedKey;
+    public static PackFont.Builder builder() {
+        return new PackFont.Builder();
     }
 
     public List<FontProvider> getProviders() {
         return providers;
     }
 
-    public Map<Integer, SizedCharacter> getCharacters() {
+    public Map<Integer, SizedCharacter> buildSizedCharacters(ResourcePack pack) {
+        Map<Integer, SizedCharacter> characters = new HashMap<>();
+
+        for (FontProvider provider : providers) {
+            characters.putAll(provider.buildSizedCharacters(pack));
+        }
+
         return characters;
+    }
+
+    public static class Builder {
+        private List<FontProvider> providers = new LinkedList<>();
+
+        private Builder() {}
+
+        public Builder providers(List<FontProvider> providers) {
+            this.providers = providers;
+            return this;
+        }
+
+        public List<FontProvider> providers() {
+            return providers;
+        }
+
+        public Builder fontProvider(FontProvider providers) {
+            this.providers.add(providers);
+            return this;
+        }
+
+        public PackFont build() {
+            return new PackFont(this);
+        }
     }
 }

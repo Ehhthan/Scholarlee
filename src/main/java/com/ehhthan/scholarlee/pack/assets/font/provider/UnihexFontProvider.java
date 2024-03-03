@@ -1,10 +1,10 @@
 package com.ehhthan.scholarlee.pack.assets.font.provider;
 
-import com.ehhthan.scholarlee.api.NamespacedKey;
-import com.ehhthan.scholarlee.api.unihex.TrimData;
+import com.ehhthan.scholarlee.pack.key.NamespacedKey;
+import com.ehhthan.scholarlee.api.texture.TrimData;
 import com.ehhthan.scholarlee.pack.ResourcePack;
 import com.ehhthan.scholarlee.pack.assets.font.character.SizedCharacter;
-import com.ehhthan.scholarlee.pack.file.InternalLocation;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -24,22 +24,43 @@ import java.util.zip.ZipFile;
 
 public class UnihexFontProvider implements FontProvider {
     private final String hexFile;
-    private final List<SizeOverride> sizeOverrides = new ArrayList<>();
+    private final List<SizeOverride> sizeOverrides;
 
-    private final Map<Integer, SizedCharacter> characters = new HashMap<>();
+    private UnihexFontProvider(Builder builder) {
+        this.hexFile = builder.hexFile;
+        this.sizeOverrides = builder.sizeOverrides;
+    }
 
-    public UnihexFontProvider(ResourcePack pack, JsonObject json) {
-        this.hexFile = json.get("hex_file").getAsString();
+    public static UnihexFontProvider.Builder builder(String hexFile) {
+        return new UnihexFontProvider.Builder(hexFile);
+    }
 
-        for (JsonElement overrideJson : json.get("size_overrides").getAsJsonArray()) {
-            sizeOverrides.add(new SizeOverride(overrideJson.getAsJsonObject()));
-        }
+    public static UnihexFontProvider.Builder json(JsonObject json) {
+        return new UnihexFontProvider.Builder(json);
+    }
+
+    @Override
+    public Type getType() {
+        return Type.UNIHEX;
+    }
+
+    public String getHexFile() {
+        return hexFile;
+    }
+
+    public List<SizeOverride> getSizeOverrides() {
+        return sizeOverrides;
+    }
+
+    @Override
+    public Map<Integer, SizedCharacter> buildSizedCharacters(ResourcePack pack) {
+        Map<Integer, SizedCharacter> characters = new HashMap<>();
 
         try {
-            ZipFile zipFile = new ZipFile(pack.getFile(NamespacedKey.fromString(hexFile), InternalLocation.FONT_HEX_FILE));
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            ZipFile zipFile = pack.getZipFile(NamespacedKey.fromString(hexFile));
 
-            while(entries.hasMoreElements()){
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
                 if (entry.getName().endsWith(".hex")) {
                     BufferedReader br = new BufferedReader(new InputStreamReader(zipFile.getInputStream(entry), StandardCharsets.UTF_8));
@@ -61,7 +82,7 @@ public class UnihexFontProvider implements FontProvider {
                                         bits[i] = true;
                                 }
 
-                                bools[index/indexIncrease] = bits;
+                                bools[index / indexIncrease] = bits;
                                 index += indexIncrease;
                             }
 
@@ -69,62 +90,65 @@ public class UnihexFontProvider implements FontProvider {
                             int codepoint = Integer.parseInt(split[0], 16);
 
                             characters.put(codepoint, new SizedCharacter(codepoint, data.getLeftIndent() + data.getWidth(), data.getHeight()));
+
                         }
                     }
-                    zipFile.close();
                     br.close();
                 }
             }
+            zipFile.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
 
-    public Type getType() {
-        return Type.UNIHEX;
-    }
-
-    public String getHexFile() {
-        return hexFile;
-    }
-
-    public List<SizeOverride> getSizeOverrides() {
-        return sizeOverrides;
-    }
-
-    @Override
-    public Map<Integer, SizedCharacter> getCharacters() {
         return characters;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UnihexFontProvider provider = (UnihexFontProvider) o;
-        return hexFile.equals(provider.hexFile) && sizeOverrides.equals(provider.sizeOverrides);
+    public JsonElement toJson() {
+        JsonObject json = new JsonObject();
+
+        json.addProperty("type", getType().toString());
+        json.addProperty("hex_file", hexFile);
+
+        JsonArray overrides = new JsonArray();
+        for (SizeOverride override : sizeOverrides) {
+            JsonObject overrideObject = new JsonObject();
+
+            overrideObject.addProperty("from", Character.toString(override.from));
+            overrideObject.addProperty("to", Character.toString(override.to));
+
+            overrideObject.addProperty("left", override.left);
+            overrideObject.addProperty("right", override.right);
+
+            overrides.add(overrideObject);
+        }
+
+        json.add("size_overrides", overrides);
+
+        return json;
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(hexFile, sizeOverrides);
+    public Builder toBuilder() {
+        return builder(hexFile).sizeOverrides(sizeOverrides);
     }
 
     static class SizeOverride {
-        int fromCodepoint, toCodepoint;
+        int from, to;
 
         int left, right;
 
-        public SizeOverride(JsonObject json) {
-            this.fromCodepoint = json.get("from").getAsString().codePoints().toArray()[0];
-            this.toCodepoint = json.get("to").getAsString().codePoints().toArray()[0];
+        private SizeOverride(JsonObject json) {
+            this.from = json.get("from").getAsString().codePoints().toArray()[0];
+            this.to = json.get("to").getAsString().codePoints().toArray()[0];
 
             this.left = json.get("left").getAsInt();
             this.right = json.get("right").getAsInt();
         }
 
         public boolean contains(int codepoint) {
-            return codepoint >= fromCodepoint && codepoint <= toCodepoint;
+            return codepoint >= from && codepoint <= to;
         }
 
         @Override
@@ -132,12 +156,58 @@ public class UnihexFontProvider implements FontProvider {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             SizeOverride override = (SizeOverride) o;
-            return fromCodepoint == override.fromCodepoint && toCodepoint == override.toCodepoint && left == override.left && right == override.right;
+            return from == override.from && to == override.to && left == override.left && right == override.right;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(fromCodepoint, toCodepoint, left, right);
+            return Objects.hash(from, to, left, right);
         }
     }
+
+    public static class Builder implements FontProvider.Builder {
+        private final String hexFile;
+
+        private List<SizeOverride> sizeOverrides = new ArrayList<>();
+
+        private Builder(String hexFile) {
+            this.hexFile = hexFile;
+        }
+
+        private Builder(JsonObject json) {
+            if (!json.has("hex_file"))
+                throw new IllegalArgumentException("No 'hex_file' is defined.");
+
+            this.hexFile = json.get("hex_file").getAsString();
+
+            for (JsonElement overrideJson : json.get("size_overrides").getAsJsonArray()) {
+                sizeOverrides.add(new SizeOverride(overrideJson.getAsJsonObject()));
+            }
+        }
+
+        public String hexFile() {
+            return hexFile;
+        }
+
+        public Builder sizeOverrides(List<SizeOverride> sizeOverrides) {
+            this.sizeOverrides = sizeOverrides;
+
+            return this;
+        }
+
+        public List<SizeOverride> sizeOverrides() {
+            return sizeOverrides;
+        }
+
+        public Builder sizeOverride(SizeOverride sizeOverride) {
+            this.sizeOverrides.add(sizeOverride);
+
+            return this;
+        }
+
+        public UnihexFontProvider build() {
+            return new UnihexFontProvider(this);
+        }
+    }
+
 }
